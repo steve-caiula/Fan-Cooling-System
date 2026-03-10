@@ -14,11 +14,7 @@
 #define FAN_TACHO PD5
 
 // LCD PINS
-#define LCD_RS  PB0
-#define LCD_E   PB1
-#define LCD_DB4 PB2
-#define LCD_DB5 PB3
-#define LCD_DB6 PB4
-#define LCD_DB7 PB5
+#define LCD_SDA PC4
+#define LCD_SCL PC5
 
 #endif

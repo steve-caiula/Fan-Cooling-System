@@ -1,5 +1,5 @@
-#ifndef MCU_TIMER_H
-#define MCU_TIMER_H
+#ifndef MCU_TIMER0
+#define MCU_TIMER0
 
 #include <stdint.h>
 #include <avr/interrupt.h>
