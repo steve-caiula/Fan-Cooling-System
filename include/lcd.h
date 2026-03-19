@@ -9,6 +9,12 @@
 #define TWI_MT_DATA_ACK     0x28  // Data sent, ACK received
 #define TWI_MT_DATA_NACK    0x30  // Data sent, NACK received
 
+// TWI CONFIGURATION
+#define F_CPU         16000000UL                                         // 16MHz crystal
+#define TWI_FREQUENCY 100000UL                                           // 100kHz
+#define TWI_PRESCALER 1                                                  // Prescaler
+#define TWBR_VALUE    (F_CPU / TWI_FREQUENCY - 16) / (2 * TWI_PRESCALER) // TWBR value
+
 // PCF8574 ADDRESS
 #define PCF8574_ADDR        0x27
 
