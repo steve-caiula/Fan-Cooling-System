@@ -78,8 +78,6 @@ void twi_send (uint8_t data)
    twi_error = 0;         // Reset error flag
    twi_busy = 1;          // Set bus as busy
    TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN) | (1 << TWIE); // Trigger START condition
-
-   while (twi_busy == 1);
 }
 
 
