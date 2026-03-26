@@ -1,8 +1,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <stdint.h>
 #include <avr/delay.h>
 #include "lcd.h"
+#include "timer0.h"
 
 
 
@@ -52,6 +52,12 @@ ISR (TWI_vect)
          TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
          twi_busy = 0;
       break;
+
+      default:
+         twi_error = 1;
+         TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
+         twi_busy = 0;
+      break;
    }
 }
 
@@ -68,9 +74,18 @@ void twi_init (void)
 
 
 
-void twi_send (uint8_t data)
+static uint8_t twi_send (uint8_t data)
 {
-   while (twi_busy == 1); // Wait until bus is free
+   uint32_t start = get_millis();
+
+   while (twi_busy == 1)
+   {
+      if (get_millis() - start >= 10)
+      {
+         twi_error = 1;
+         return 1; // Errore
+      }
+   }
    
    twi_buffer[0] = data;  // Load byte into buffer
    twi_buffer_len = 1;    // Always 1 byte
@@ -78,35 +93,41 @@ void twi_send (uint8_t data)
    twi_error = 0;         // Reset error flag
    twi_busy = 1;          // Set bus as busy
    TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN) | (1 << TWIE); // Trigger START condition
+
+   return 0; // Success
 }
 
 
 
 
-void lcd_send_nibble (uint8_t nibble, uint8_t rs_mode)
+static uint8_t lcd_send_nibble (uint8_t nibble, uint8_t rs_mode)
 {
    uint8_t data;
 
    data = nibble << 4 | (rs_mode) | (LCD_EN) | (LCD_BL);
-   twi_send(data);
+   if (twi_send (data) != 0) return 1;
 
    data = nibble << 4 | (rs_mode) | (LCD_BL);
-   twi_send(data);
+   if (twi_send (data) != 0) return 1;
+
+   return 0;
 }
 
 
 
 
-void lcd_send_byte (uint8_t data, uint8_t rs_mode)
+static uint8_t lcd_send_byte (uint8_t data, uint8_t rs_mode)
 {
-   lcd_send_nibble (data >> 4, rs_mode);
-   lcd_send_nibble (data, rs_mode);
+   if (lcd_send_nibble (data >> 4, rs_mode) != 0) return 1;
+   if (lcd_send_nibble (data, rs_mode) != 0) return 1;
+
+   return 0;
 }
 
 
 
 
-void lcd_initialization (void)
+uint8_t lcd_initialization (void)
 {
    /* Step 1: Power-On Delay.
       Wait for the power supply (VCC) to stabilize. The datasheet requires 
@@ -121,20 +142,20 @@ void lcd_initialization (void)
       prevents any accidental data latching before the sequence begins.
    */
 
-   lcd_send_nibble (LCD_WAKE_UP, LCD_COMMAND);
+   if (lcd_send_nibble (LCD_WAKE_UP, LCD_COMMAND) != 0) return 1;
    _delay_ms (5); // Required wait > 4.1ms
 
-   lcd_send_nibble (LCD_WAKE_UP, LCD_COMMAND);
+   if (lcd_send_nibble (LCD_WAKE_UP, LCD_COMMAND) != 0) return 1;
    _delay_us (100); // Required wait > 100us
 
-   lcd_send_nibble (LCD_WAKE_UP, LCD_COMMAND);
+   if (lcd_send_nibble (LCD_WAKE_UP, LCD_COMMAND) != 0) return 1;
 
    /* Step 4: 4-Bit Mode Activation.
       Send the command (0x02) to switch the data interface from 8-bit 
       to 4-bit mode. From this exact point onward, the controller expects 
       all instructions and data to be sent as two consecutive nibbles.
    */
-   lcd_send_nibble (LCD_MODE_4_BIT, LCD_COMMAND);
+   if (lcd_send_nibble (LCD_MODE_4_BIT, LCD_COMMAND) != 0) return 1;
    _delay_us (50);
 
    /* Step 5: Final Display Configuration.
@@ -142,24 +163,26 @@ void lcd_initialization (void)
       the display parameters: 2 lines with a 5x8 font, turn the display ON, 
       clear the memory, and set the cursor to automatically move right.
    */
-   lcd_send_byte (LCD_FUNCTION_SET, LCD_COMMAND);
+   if (lcd_send_byte (LCD_FUNCTION_SET, LCD_COMMAND) != 0) return 1;
 
-   lcd_send_byte (LCD_DISPLAY_ON, LCD_COMMAND);
+   if (lcd_send_byte (LCD_DISPLAY_ON, LCD_COMMAND) != 0) return 1;
 
    /* The Clear Display command takes significantly longer to execute 
       (~1.52ms) than standard commands. A 2ms delay ensures it completes 
       before the Entry Mode command is sent.
    */
-   lcd_send_byte (LCD_CLEAR_DISPLAY, LCD_COMMAND);
+   if (lcd_send_byte (LCD_CLEAR_DISPLAY, LCD_COMMAND) != 0) return 1;
    _delay_ms (2);
 
-   lcd_send_byte (LCD_ENTRY_MODE, LCD_COMMAND);
+   if (lcd_send_byte (LCD_ENTRY_MODE, LCD_COMMAND) != 0) return 1;
+
+   return 0;
 }
 
 
 
 
-void lcd_set_cursor (uint8_t row, uint8_t column)
+uint8_t lcd_set_cursor (uint8_t row, uint8_t column)
 {
    uint8_t destination_address;
    
@@ -191,6 +214,9 @@ void lcd_set_cursor (uint8_t row, uint8_t column)
       case 3:
       destination_address = LCD_LINE_4 + column;
       break;
+
+      default:
+      return 1;
    }
 
    /* Step 2: Send the Position Command.
@@ -198,13 +224,15 @@ void lcd_set_cursor (uint8_t row, uint8_t column)
       as a single instruction byte in LCD_COMMAND mode (RS = 0) to place 
       the cursor at the exact memory location.
    */
-   lcd_send_byte(destination_address, LCD_COMMAND);
+   if (lcd_send_byte(destination_address, LCD_COMMAND) != 0) return 1;
+
+   return 0;
 }
 
 
 
 
-void lcd_print (const char *string)
+uint8_t lcd_print (const char *string)
 {
    uint8_t i = 0;
 
@@ -222,7 +250,7 @@ void lcd_print (const char *string)
          Character Generator ROM (CGROM) to map ASCII-like 
          values to 5x8 pixel matrices.
       */
-      lcd_send_byte(string[i], LCD_DATA);
+      if (lcd_send_byte(string[i], LCD_DATA) != 0) return 1;
 
       /* Step 3: Auto-Increment Logic.
          The controller is configured (via LCD_ENTRY_MODE) to 
@@ -232,4 +260,6 @@ void lcd_print (const char *string)
       */
       i++;
    }
+
+   return 0;
 }

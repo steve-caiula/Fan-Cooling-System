@@ -1,6 +1,8 @@
 #ifndef LCD_H
 #define LCD_H
 
+#include <stdint.h>
+
 // TWI STATES
 #define TWI_START        0x08
 #define TWI_REP_START    0x10
@@ -46,5 +48,11 @@
 
 // SPECIAL CHARACTERS
 #define LCD_DEGREE_SYMBOL 0xDF
+
+// Public functions
+void twi_init (void);
+uint8_t lcd_initialization (void);
+uint8_t lcd_set_cursor (uint8_t row, uint8_t column);
+uint8_t lcd_print (const char *string);
 
 #endif
