@@ -17,4 +17,7 @@
 #define LCD_SDA PC4
 #define LCD_SCL PC5
 
+// CPU FREQUENCY
+#define CPU_FREQ 16000000UL
+
 #endif

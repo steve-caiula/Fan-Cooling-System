@@ -4,7 +4,7 @@
 #include <util/delay.h>
 #include "temp_sensor.h"
 #include "pin_definitions.h"
-#include "mcu_timer.h"
+#include "timer0.h"
 
 
 
@@ -291,20 +291,4 @@ int16_t get_raw_temperature (void)
 float convert_to_celsius (int16_t raw_temperature)
 {
     return (float)raw_temperature * 0.0625;
-}
-
-
-
-
-float convert_to_fahrenheit (float temp_celsius)
-{
-    return (temp_celsius * 1.8) + 32.0;
-}
-
-
-
-
-float convert_to_kelvin (float temp_celsius)
-{
-    return temp_celsius + 273.15;
 }
