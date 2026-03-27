@@ -1,5 +1,4 @@
 #include <avr/io.h>
-#include <avr/interrupt.h>
 #include <avr/delay.h>
 #include "lcd.h"
 #include "timer0.h"

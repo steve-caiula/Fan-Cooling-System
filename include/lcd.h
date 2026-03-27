@@ -2,6 +2,7 @@
 #define LCD_H
 
 #include <stdint.h>
+#include <avr/interrupt.h>
 
 // TWI STATES
 #define TWI_START        0x08
@@ -50,6 +51,7 @@
 #define LCD_DEGREE_SYMBOL 0xDF
 
 // Public functions
+ISR (TWI_vect);
 void twi_init (void);
 uint8_t lcd_initialization (void);
 uint8_t lcd_set_cursor (uint8_t row, uint8_t column);
