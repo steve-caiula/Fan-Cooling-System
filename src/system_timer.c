@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "timer0.h"
+#include "system_timer.h"
 
 volatile uint32_t system_millis = 0;          // Global millisecond counter updated by TIMER0
 

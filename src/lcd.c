@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <avr/delay.h>
 #include "lcd.h"
-#include "timer0.h"
+#include "system_timer.h"
 
 
 

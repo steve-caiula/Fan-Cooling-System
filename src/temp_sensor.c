@@ -3,8 +3,8 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "temp_sensor.h"
-#include "pin_definitions.h"
-#include "timer0.h"
+#include "board.h"
+#include "system_timer.h"
 
 
 

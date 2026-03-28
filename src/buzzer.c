@@ -1,8 +1,7 @@
 #include <avr/io.h>
 #include <stdint.h>
-#include "pin_definitions.h"
 #include "buzzer.h"
-#include "timer0.h"
+#include "system_timer.h"
 
 void buzzer_init (void)
 {

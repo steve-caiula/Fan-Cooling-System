@@ -2,7 +2,7 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 #include "fan.h"
-#include "timer0.h"
+#include "system_timer.h"
 
 volatile uint16_t pulse_count = 0;
 
@@ -55,7 +55,20 @@ uint16_t fan_get_rpm (void)
     return rpm;
 }
 
-uint8_t fan_get_status ()
+fan_status_t fan_get_status (uint16_t rpm, uint8_t duty_cycle)
 {
+    if (rpm == 0 && duty_cycle > 0)
+    {
+        return FAN_ERROR_STALL;
+    }
 
+    else if (rpm < (duty_cycle * FAN_RPM_PER_DUTY * FAN_SPEED_TOLERANCE / 100)) 
+    {
+        return FAN_ERROR_UNDERSPEED;
+    }
+
+    else 
+    {
+        return FAN_OK;
+    }
 }

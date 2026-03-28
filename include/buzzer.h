@@ -1,11 +1,8 @@
 #ifndef BUZZER_H
 #define BUZZER_H
 
-#include "pin_definitions.h"
-
-#define BUZZER_FREQ_HZ        2000   // Tone frequency
-#define BUZZER_BLINK_ON_MS    200    // Time sound on
-#define BUZZER_BLINK_OFF_MS   200    // Time sound off
+#include "board.h"
+#include "config.h"
 
 /*
   CTC Mode frequency formula: OCR2A = (F_CPU / (2 * prescaler * target_freq)) - 1
