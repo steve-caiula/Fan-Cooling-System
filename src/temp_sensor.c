@@ -7,9 +7,7 @@
 #include "system_timer.h"
 
 
-
-
-uint8_t sensor_reset (void)
+uint8_t sensor_reset(void)
 {
     uint8_t detected = 0;
 
@@ -62,11 +60,9 @@ uint8_t sensor_reset (void)
 }
 
 
-
-
-static void sensor_write_bit (uint8_t bit_value)
+static void sensor_write_bit(uint8_t bit_value)
 {
-    cli (); // Atomic Block Start: Prevent interrupt interference during write slot
+    cli(); // Atomic Block Start: Prevent interrupt interference during write slot
     
     // Every write slot starts by pulling the bus LOW
     DDRD |= (1 << TEMP_SENSOR);    // Set pin as output
@@ -82,9 +78,9 @@ static void sensor_write_bit (uint8_t bit_value)
     */
     if (bit_value) 
     {
-        _delay_us (10);           // Keep bus LOW for short amount of time
+        _delay_us(10);           // Keep bus LOW for short amount of time
         DDRD &= ~(1 << TEMP_SENSOR); // Release bus (set as input)
-        _delay_us (50);           // Recovery time
+        _delay_us(50);           // Recovery time
     }
 
 
@@ -96,24 +92,24 @@ static void sensor_write_bit (uint8_t bit_value)
     */
     else 
     {
-        _delay_us (55);           // Keep bus LOW for almost the whole slot time
+        _delay_us(55);           // Keep bus LOW for almost the whole slot time
         DDRD &= ~(1 << TEMP_SENSOR);  // Release bus (set as input)
-        _delay_us (5);            // Recovery time
+        _delay_us(5);            // Recovery time
     }
 
-    sei (); // Atomic Block End
+    sei(); // Atomic Block End
 
     /* 
        Global recovery time: The dasheet states that the sensor needs a
        minimum of a 1us recovery time between individual write slots.
     */
-    _delay_us (2);               // This ensures at least 2us of HIGH bus between any two bits
+    _delay_us(2);               // This ensures at least 2us of HIGH bus between any two bits
 }
 
 
 
 
-static void sensor_write_byte (uint8_t data)
+static void sensor_write_byte(uint8_t data)
 {
     // Loop 8 times to read each bit of the byte
     for (uint8_t i = 0; i < 8; i++) 
@@ -124,13 +120,11 @@ static void sensor_write_byte (uint8_t data)
 }
 
 
-
-
-static uint8_t sensor_read_bit (void)
+static uint8_t sensor_read_bit(void)
 {
     uint8_t bit_value = 0;
 
-    cli (); // Atomic Block Start: Protect the timing-sensitive sampling window
+    cli(); // Atomic Block Start: Protect the timing-sensitive sampling window
 
     /* 
        Every read slot is initiated by the master pulling the bus LOW 
@@ -149,7 +143,7 @@ static uint8_t sensor_read_bit (void)
        The datasheet states data is valid for 15us from the start of the slot.
     */
     DDRD &= ~(1 << TEMP_SENSOR);   // Release bus (set as input)
-    _delay_us (10);
+    _delay_us(10);
 
     
     
@@ -173,22 +167,20 @@ static uint8_t sensor_read_bit (void)
        We wait the remaining time (approx 50us) to complete the slot 
        and allow the mandatory recovery time before the next operation.
     */
-    _delay_us (50);
+    _delay_us(50);
 
 
 
-    sei (); // Atomic Block End
+    sei(); // Atomic Block End
 
     /* 
        Global recovery time: The datasheet states a minimum of 1us 
        is required between individual slots to let the bus stabilize.
     */
-    _delay_us (2);
+    _delay_us(2);
 
     return bit_value;
 }
-
-
 
 
 static uint8_t sensor_read_byte (void)
@@ -214,15 +206,14 @@ static uint8_t sensor_read_byte (void)
 }
 
 
-
-int16_t get_raw_temperature (void)
+int16_t get_raw_temperature(void)
 {
     // Persistent variables to track state across function calls
     static uint32_t last_conversion_start = 0;
     static int16_t raw_temperature = 0;
     static uint8_t conversion_in_progress = 0;
     
-    uint32_t current_time = get_millis ();
+    uint32_t current_time = get_millis();
 
     /* STATE 1: Start conversion.
        If no conversion is currently running, we trigger the DS18B20 to start
@@ -288,7 +279,7 @@ int16_t get_raw_temperature (void)
    Multiplying the signed raw value by this resolution converts 
    the binary fixed-point data into a standard float Celsius value.
 */
-float convert_to_celsius (int16_t raw_temperature)
+float convert_to_celsius(int16_t raw_temperature)
 {
     return (float)raw_temperature * 0.0625;
 }

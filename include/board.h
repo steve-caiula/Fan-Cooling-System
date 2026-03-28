@@ -1,5 +1,3 @@
-// --- PIN DEFINITIONS ---
-
 #ifndef PIN_DEF
 #define PIN_DEF
 

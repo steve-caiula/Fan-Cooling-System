@@ -1,5 +1,4 @@
 #include <avr/io.h>
-#include <avr/interrupt.h>
 #include <stdint.h>
 #include "fan.h"
 #include "system_timer.h"
@@ -22,8 +21,8 @@ void fan_init (void)
 
     DDRD &= ~(1 << PD2);
 
-    EICRA |= (1 << ISC01);
-    EIMSK |= (1 << INT0);
+    EICRA = (1 << ISC01);
+    EIMSK = (1 << INT0);
 }
 
 void fan_set_speed (uint8_t duty_cycle)

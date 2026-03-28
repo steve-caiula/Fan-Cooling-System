@@ -50,10 +50,10 @@
 // SPECIAL CHARACTERS
 #define LCD_DEGREE_SYMBOL 0xDF
 
-// Public functions
+// PUBLIC FUNCTIONS
 ISR (TWI_vect);
 void twi_init (void);
-uint8_t lcd_initialization (void);
+uint8_t lcd_init (void);
 uint8_t lcd_set_cursor (uint8_t row, uint8_t column);
 uint8_t lcd_print (const char *string);
 

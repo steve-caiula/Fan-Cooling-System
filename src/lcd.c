@@ -126,7 +126,7 @@ static uint8_t lcd_send_byte (uint8_t data, uint8_t rs_mode)
 
 
 
-uint8_t lcd_initialization (void)
+uint8_t lcd_init (void)
 {
    /* Step 1: Power-On Delay.
       Wait for the power supply (VCC) to stabilize. The datasheet requires 

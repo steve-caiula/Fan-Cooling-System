@@ -1,57 +1,79 @@
+/*
+   Buzzer driver for passive piezo buzzer on OC2B (D3).
+   Generates tones in hardware via Timer 2 CTC mode.
+   Provides continuous alarm for sensor faults and
+   intermittent alarm for LCD faults.
+*/
+
+
 #include <avr/io.h>
-#include <stdint.h>
 #include "buzzer.h"
 #include "system_timer.h"
 
-void buzzer_init (void)
+
+static uint8_t buzzer_status = 0;   // Tracks current buzzer state: 0 = off, 1 = on
+
+
+void buzzer_init(void)
 {
-    DDRD |= (1 << BUZZER);
+    DDRD |= (1 << BUZZER);   // Set buzzer pin as output
 }
 
-static void buzzer_set_tone (void)
-{
-    TCCR2A = (1 << WGM21) | (1 << COM2B0);
-    TCCR2B = (0 << WGM22) | (1 << CS22) | (0 << CS21) | (0 << CS20);
 
-    OCR2A = BUZZER_OCR2A_VALUE;
+/*
+   Configures Timer 2 in CTC mode to generate a tone on OC2B (D3).
+   The hardware toggles the pin automatically at the target frequency.
+*/
+static void buzzer_set_tone(void)
+{
+    TCCR2A = (1 << WGM21) | (1 << COM2B0);                             // CTC mode, toggle OC2B (D3) on compare match
+    TCCR2B = (0 << WGM22) | (1 << CS22) | (0 << CS21) | (0 << CS20);   // Prescaler 64
+
+    OCR2A = BUZZER_OCR2A_VALUE;    // Set compare value for target frequency
 }
 
-static void buzzer_stop (void)
+
+void buzzer_stop(void)
 {
-    TCCR2A = 0;
-    TCCR2B = 0;
+    TCCR2A = 0;   // Disable CTC mode and OC2B toggle
+    TCCR2B = 0;   // Stop timer clock
+
+    buzzer_status = 0;
 }
 
-void buzzer_alarm_sensor (void)
+
+void buzzer_alarm_sensor(void)
 {
-    buzzer_set_tone ();
+    if (buzzer_status == 0) 
+    {
+        buzzer_set_tone();   // Start continuous tone
+        buzzer_status = 1;   // Mark as active to prevent timer reconfiguration
+    }
 }
 
-void buzzer_alarm_lcd (void)
-{
-    
-    static uint32_t last_toggle = 0;
-    static uint8_t buzzer_status = 1;
 
-    uint32_t current_time = get_millis();
+void buzzer_alarm_lcd(void)
+{
+    static uint32_t last_toggle = 0;        // Timestamp of last buzzer state change
+    uint32_t current_time = get_millis();   // Current system time in milliseconds
 
     if (buzzer_status == 1)
     {
-        if (current_time - last_toggle >= BUZZER_BLINK_ON_MS)
+        if (current_time - last_toggle >= BUZZER_BLINK_ON_MS)   // Tone on time elapsed
         {
-            buzzer_stop ();
-            last_toggle = current_time;
-            buzzer_status = 0;
+            buzzer_stop();                // Silence buzzer
+            last_toggle = current_time;   // Reset timestamp
+            buzzer_status = 0;            // Update state to off
         }
     }
 
     else 
     {
-        if (current_time - last_toggle >= BUZZER_BLINK_OFF_MS)
+        if (current_time - last_toggle >= BUZZER_BLINK_OFF_MS)   // Tone off time elapsed
         {
-            buzzer_set_tone ();
-            last_toggle = current_time;
-            buzzer_status = 1;
+            buzzer_set_tone();            // Activate buzzer
+            last_toggle = current_time;   // Reset timestamp
+            buzzer_status = 1;            // Update state to on
         }
     }
 }
