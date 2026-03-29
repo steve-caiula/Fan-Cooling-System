@@ -1,3 +1,9 @@
+/*
+   LED status indicator driver for four LEDs on PB2-PB5.
+   GREEN = system ok, BLUE = LCD fault, YELLOW = sensor fault, RED = fan fault.
+*/
+
+
 #include <avr/io.h>
 #include "board.h"
 #include "led.h"
