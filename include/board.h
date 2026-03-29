@@ -15,6 +15,12 @@
 #define LCD_SDA PC4
 #define LCD_SCL PC5
 
+// LED PINS
+#define LED_RED    PB2
+#define LED_YELLOW PB3
+#define LED_BLUE   PB4
+#define LED_GREEN  PB5
+
 // CPU FREQUENCY
 #define CPU_FREQ 16000000UL
 
