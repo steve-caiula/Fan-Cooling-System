@@ -1,5 +1,12 @@
+/*
+   Temperature sensor driver for DS18B20 on 1-Wire bus (D4).
+   Implements bit-banged 1-Wire protocol with interrupt protection.
+   Communication slots use blocking delays (~2ms total).
+   Temperature conversion (750ms) is non-blocking via state machine.
+*/
+
+
 #include <avr/io.h>
-#include <stdint.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "temp_sensor.h"
@@ -56,15 +63,17 @@ uint8_t sensor_reset(void)
 }
 
 
+/*
+   Sends a single bit on the 1-Wire bus.
+   Disables interrupts to protect timing-sensitive write slot.
+*/
 static void sensor_write_bit(uint8_t bit_value)
 {
-    cli(); // Atomic Block Start: Prevent interrupt interference during write slot
+    cli();   // Atomic Block Start: Prevent interrupt interference during write slot
     
     // Every write slot starts by pulling the bus LOW
     DDRD |= (1 << TEMP_SENSOR);    // Set pin as output
     PORTD &= ~(1 << TEMP_SENSOR);  // Pull bus LOW
-
-
     
     /* 
        Write 1 slot: The master pulls the bus LOW and then releases it 
@@ -74,12 +83,10 @@ static void sensor_write_bit(uint8_t bit_value)
     */
     if (bit_value) 
     {
-        _delay_us(10);           // Keep bus LOW for short amount of time
-        DDRD &= ~(1 << TEMP_SENSOR); // Release bus (set as input)
-        _delay_us(50);           // Recovery time
+        _delay_us(10);             // Keep bus LOW for short amount of time
+        DDRD &= ~(1 << TEMP_SENSOR);   // Release bus (set as input)
+        _delay_us(50);             // Recovery time
     }
-
-
 
     /* 
        Write 0 slot: The master pulls the bus LOW and holds it for 
@@ -103,6 +110,9 @@ static void sensor_write_bit(uint8_t bit_value)
 }
 
 
+/*
+   Sends a full byte LSB-first on the 1-Wire bus.
+*/
 static void sensor_write_byte(uint8_t data)
 {
     // Loop 8 times to read each bit of the byte
@@ -114,22 +124,25 @@ static void sensor_write_byte(uint8_t data)
 }
 
 
+/*
+   Reads a single bit from the 1-Wire bus.
+   Disables interrupts to protect the 15us sampling window.
+   Returns the bit value (0 or 1).
+*/
 static uint8_t sensor_read_bit(void)
 {
     uint8_t bit_value = 0;
 
-    cli(); // Atomic Block Start: Protect the timing-sensitive sampling window
+    cli();   // Atomic Block Start: Protect the timing-sensitive sampling window
 
     /* 
        Every read slot is initiated by the master pulling the bus LOW 
        for a minimum of 1us. We hold it for 2us to ensure the sensor 
        detects the start of the slot (TINIT).
     */
-    DDRD |= (1 << TEMP_SENSOR);    // Set pin as output
-    PORTD &= ~(1 << TEMP_SENSOR);  // Pull bus LOW
+    DDRD |= (1 << TEMP_SENSOR);     // Set pin as output
+    PORTD &= ~(1 << TEMP_SENSOR);   // Pull bus LOW
     _delay_us(2);
-    
-
 
     /* 
        After the initial pulse, the master must release the bus so the 
@@ -139,8 +152,6 @@ static uint8_t sensor_read_bit(void)
     DDRD &= ~(1 << TEMP_SENSOR);   // Release bus (set as input)
     _delay_us(10);
 
-    
-    
     /* 
        The master must sample within 15us from the falling edge. 
        Having already waited 2us, an additional 10us delay brings us 
@@ -161,7 +172,7 @@ static uint8_t sensor_read_bit(void)
     */
     _delay_us(50);
 
-    sei(); // Atomic Block End
+    sei();   // Atomic Block End
 
     /* 
        Global recovery time: The datasheet states a minimum of 1us 
@@ -173,9 +184,13 @@ static uint8_t sensor_read_bit(void)
 }
 
 
+/*
+   Reads a full byte LSB-first from the 1-Wire bus.
+   Returns the assembled byte from 8 consecutive read slots.
+*/
 static uint8_t sensor_read_byte(void)
 {
-    uint8_t scratchpad_byte = 0; // Temporary container for the received byte
+    uint8_t scratchpad_byte = 0;   // Temporary container for the received byte
 
     // Loop 8 times to read each bit of the byte
     for (uint8_t i = 0; i < 8; i++) 
@@ -185,8 +200,7 @@ static uint8_t sensor_read_byte(void)
         if (bit == 1) 
         {
             // The DS18B20 transmits the Least Significant Bit (LSB) first
-
-            scratchpad_byte |= (1 << i); // Set the i-th bit of scratchpad_byte
+            scratchpad_byte |= (1 << i);   // Set the i-th bit of scratchpad_byte
         }
 
         // else: do nothing as the bit is already 0 by default
@@ -211,7 +225,7 @@ int16_t get_raw_temperature(void)
     */
     if (!conversion_in_progress) 
     {
-        // If sensor not detected return TEMP_SENSOR_ERROR
+        // If sensor not detected returns TEMP_SENSOR_ERROR
         if (sensor_reset() == 0)
         {
             return TEMP_SENSOR_ERROR;
@@ -231,7 +245,7 @@ int16_t get_raw_temperature(void)
     if (conversion_in_progress && (current_time - last_conversion_start >= 750)) 
     {
         /* Once 750ms have passed, the data is ready in the Scratchpad.
-           If sensor not detected return TEMP_SENSOR_ERROR
+           If sensor not detected returns TEMP_SENSOR_ERROR
         */
         if (sensor_reset() == 0)
         {

@@ -1,7 +1,9 @@
-#include <stdint.h>
+#include <avr/interrupt.h>
 #include "system_timer.h"
 
-volatile uint32_t system_millis = 0;          // Global millisecond counter updated by TIMER0
+
+volatile uint32_t system_millis = 0;   // Global millisecond counter updated by TIMER0
+
 
 uint32_t get_millis (void)
 {
@@ -12,15 +14,17 @@ uint32_t get_millis (void)
        to prevent the timer from updating the value mid-access, which would
        result in data corruption.
     */
-    uint32_t ms_copy;        // Temporary variable
+    uint32_t ms_copy;   // Temporary variable
 
-    cli ();                  // Disable interrupts to protect the 32-bit read
-    ms_copy = system_millis; // Copy system_millis to a local variable while interrupts are disabled
-    sei ();                  // Re-enable interrupts immediately after
-    return ms_copy;          // Return the protected copy
+    cli ();                    // Disable interrupts to protect the 32-bit read
+    ms_copy = system_millis;   // Copy system_millis to a local variable while interrupts are disabled
+    sei ();                    // Re-enable interrupts immediately after
+
+    return ms_copy;   // Returns the protected copy
 }
+
 
 ISR (TIMER0_COMPA_vect)
 {
-    system_millis++; // + 1 millis
+    system_millis++;   // + 1 millis
 }
