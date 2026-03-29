@@ -3,12 +3,11 @@
 
 
 #include <stdint.h>
-#include <avr/interrupt.h>
+#include "board.h"
 
 
 // TWI STATES
-#define TWI_START         0x08
-#define TWI_REP_START     0x10
+#define TWI_START         0x08   // START condition transmitted
 #define TWI_MT_SLA_ACK    0x18   // Address sent, ACK received
 #define TWI_MT_SLA_NACK   0x20   // Address sent, NACK received
 #define TWI_MT_DATA_ACK   0x28   // Data sent, ACK received
@@ -16,10 +15,9 @@
 
 
 // TWI CONFIGURATION
-#define F_CPU          16000000UL                                             // 16MHz crystal
-#define TWI_FREQUENCY  100000UL                                               // 100kHz
-#define TWI_PRESCALER  1                                                      // Prescaler
-#define TWBR_VALUE     ((F_CPU / TWI_FREQUENCY - 16) / (2 * TWI_PRESCALER))   // TWBR value
+#define TWI_FREQUENCY  100000UL                                                  // 100kHz
+#define TWI_PRESCALER  1                                                         // Prescaler
+#define TWBR_VALUE     ((CPU_FREQ / TWI_FREQUENCY - 16) / (2 * TWI_PRESCALER))   // TWBR value
 
 
 // PCF8574 ADDRESS
@@ -28,7 +26,7 @@
 
 // LCD CONTROLS
 #define LCD_RS  0x01   // P0
-#define LCD_RW  0x02   // P1
+#define LCD_RW  0x02   // P1, always LOW (write-only mode)
 #define LCD_EN  0x04   // P2
 #define LCD_BL  0x08   // P3 (backlight)
 
@@ -61,10 +59,25 @@
 
 
 // PUBLIC FUNCTIONS
-ISR(TWI_vect);
-void twi_init(void);
+/*
+   Initializes the TWI peripheral and the LCD display.
+   Must be called once at startup before any other LCD function.
+   Returns 0 on success, 1 on communication error.
+*/
 uint8_t lcd_init(void);
+
+
+/*
+   Moves the cursor to the specified row (0-3) and column (0-19).
+   Returns 0 on success, 1 on invalid row or communication error.
+*/
 uint8_t lcd_set_cursor(uint8_t row, uint8_t column);
+
+
+/*
+   Prints a null-terminated string at the current cursor position.
+   Returns 0 on success, 1 on communication error.
+*/
 uint8_t lcd_print(const char *string);
 
 
