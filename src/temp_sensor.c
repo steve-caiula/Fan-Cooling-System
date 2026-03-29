@@ -11,19 +11,17 @@ uint8_t sensor_reset(void)
 {
     uint8_t detected = 0;
 
-    cli (); // Critical Section Start: Disable interrupts to protect 1-Wire timing
+    cli();   // Critical Section Start: Disable interrupts to protect 1-Wire timing
 
-    // --- PHASE 1: MASTER TRANSMITS RESET PULSE ---
+    // PHASE 1: MASTER TRANSMITS RESET PULSE
 
-    DDRD |= (1 << TEMP_SENSOR);   // Set pin as output
-    PORTD &= ~(1 << TEMP_SENSOR); // Pull bus LOW
-    _delay_us(480);           // Wait time for reset 
+    DDRD |= (1 << TEMP_SENSOR);     // Set pin as output
+    PORTD &= ~(1 << TEMP_SENSOR);   // Pull bus LOW
+    _delay_us(480);             // Wait time for reset 
 
+    // PHASE 2: MASTER REALESES BUS AND WAITS FOR PRESENCE PULSE
 
-
-    // --- PHASE 2: MASTER REALESES BUS AND WAITS FOR PRESENCE PULSE ---
-
-    DDRD &= ~(1 << TEMP_SENSOR);  // Release bus (set as input)
+    DDRD &= ~(1 << TEMP_SENSOR);   // Release bus (set as input)
     
     /* 
        Wait 70us to sample the bus.
@@ -31,15 +29,13 @@ uint8_t sensor_reset(void)
        for 60-240us. Sampling at 70us ensures we catch both fast and slow sensors
        during their guaranteed presence pulse window.
     */
-    _delay_us (70);
+    _delay_us(70);
 
-
-
-    // --- PHASE 3: SAMPLE THE BUS TO DETECT THE SENSOR ---
+    // PHASE 3: SAMPLE THE BUS TO DETECT THE SENSOR
 
     if (!(PIND & (1 << TEMP_SENSOR))) 
     {
-        detected = 1; // Sensor pulled the bus LOW (Presence Pulse found)
+        detected = 1;   // Sensor pulled the bus LOW (Presence Pulse found)
     }
 
     else 
@@ -52,11 +48,11 @@ uint8_t sensor_reset(void)
        This ensures the sensor has finished its presence pulse (max 240us)
        and the bus has stabilized before the next communication starts.
     */
-    _delay_us (410);  
+    _delay_us(410);  
     
-    sei ();          // Critical Section End: Re-enable interrupts
+    sei();   // Critical Section End: Re-enable interrupts
 
-    return detected; // Return 1 if the sensor is detected, 0 otherwise
+    return detected;   // Return 1 if the sensor is detected, 0 otherwise
 }
 
 
@@ -92,9 +88,9 @@ static void sensor_write_bit(uint8_t bit_value)
     */
     else 
     {
-        _delay_us(55);           // Keep bus LOW for almost the whole slot time
-        DDRD &= ~(1 << TEMP_SENSOR);  // Release bus (set as input)
-        _delay_us(5);            // Recovery time
+        _delay_us(55);             // Keep bus LOW for almost the whole slot time
+        DDRD &= ~(1 << TEMP_SENSOR);   // Release bus (set as input)
+        _delay_us(5);              // Recovery time
     }
 
     sei(); // Atomic Block End
@@ -103,10 +99,8 @@ static void sensor_write_bit(uint8_t bit_value)
        Global recovery time: The dasheet states that the sensor needs a
        minimum of a 1us recovery time between individual write slots.
     */
-    _delay_us(2);               // This ensures at least 2us of HIGH bus between any two bits
+    _delay_us(2);   // This ensures at least 2us of HIGH bus between any two bits
 }
-
-
 
 
 static void sensor_write_byte(uint8_t data)
@@ -114,8 +108,8 @@ static void sensor_write_byte(uint8_t data)
     // Loop 8 times to read each bit of the byte
     for (uint8_t i = 0; i < 8; i++) 
     {
-        sensor_write_bit(data & 0x01); // Isolate bit
-        data >>= 1;                              // Shift bit
+        sensor_write_bit(data & 0x01);   // Isolate bit
+        data >>= 1;                                // Shift bit
     }
 }
 
@@ -160,16 +154,12 @@ static uint8_t sensor_read_bit(void)
 
     // else: do nothing as the bit is already 0 by default
 
-    
-    
     /* 
        The total time slot must be at least 60us. 
        We wait the remaining time (approx 50us) to complete the slot 
        and allow the mandatory recovery time before the next operation.
     */
     _delay_us(50);
-
-
 
     sei(); // Atomic Block End
 
@@ -183,7 +173,7 @@ static uint8_t sensor_read_bit(void)
 }
 
 
-static uint8_t sensor_read_byte (void)
+static uint8_t sensor_read_byte(void)
 {
     uint8_t scratchpad_byte = 0; // Temporary container for the received byte
 
@@ -269,8 +259,6 @@ int16_t get_raw_temperature(void)
     */
     return raw_temperature;
 }
-
-
 
 
 /* 

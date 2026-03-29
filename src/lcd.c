@@ -4,15 +4,11 @@
 #include "system_timer.h"
 
 
-
-
 volatile uint8_t twi_busy;         // 1 = transmission in progress, 0 = idle
 volatile uint8_t twi_error;        // 0 = NO ERROR, 1 = ERROR
 volatile uint8_t twi_buffer[16];   // Data buffer to transmit
 volatile uint8_t twi_buffer_len;   // Number of bytes to transmit
 volatile uint8_t twi_buffer_index; // Current buffer index
-
-
 
 
 ISR (TWI_vect)
@@ -61,16 +57,12 @@ ISR (TWI_vect)
 }
 
 
-
-
 void twi_init (void)
 {
    TWBR = TWBR_VALUE;                  // Set SCL frequency to 100kHz
    TWSR = (0 << TWPS1) | (0 << TWPS0); // Set prescaler to 1
    TWCR = (1 << TWEN) | (1 << TWIE);   // Enable TWI and interrupts
 }
-
-
 
 
 static uint8_t twi_send (uint8_t data)
@@ -97,8 +89,6 @@ static uint8_t twi_send (uint8_t data)
 }
 
 
-
-
 static uint8_t lcd_send_nibble (uint8_t nibble, uint8_t rs_mode)
 {
    uint8_t data;
@@ -113,8 +103,6 @@ static uint8_t lcd_send_nibble (uint8_t nibble, uint8_t rs_mode)
 }
 
 
-
-
 static uint8_t lcd_send_byte (uint8_t data, uint8_t rs_mode)
 {
    if (lcd_send_nibble (data >> 4, rs_mode) != 0) return 1;
@@ -122,8 +110,6 @@ static uint8_t lcd_send_byte (uint8_t data, uint8_t rs_mode)
 
    return 0;
 }
-
-
 
 
 uint8_t lcd_init (void)
@@ -179,8 +165,6 @@ uint8_t lcd_init (void)
 }
 
 
-
-
 uint8_t lcd_set_cursor (uint8_t row, uint8_t column)
 {
    uint8_t destination_address;
@@ -227,8 +211,6 @@ uint8_t lcd_set_cursor (uint8_t row, uint8_t column)
 
    return 0;
 }
-
-
 
 
 uint8_t lcd_print (const char *string)
