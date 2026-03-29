@@ -1,5 +1,11 @@
-#ifndef PIN_DEF
-#define PIN_DEF
+/*
+   Hardware pin definitions and CPU frequency for Arduino UNO R3.
+   Modify this file when porting to a different board.
+*/
+
+
+#ifndef BOARD_H
+#define BOARD_H
 
 
 // BUZZER PIN
