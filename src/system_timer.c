@@ -1,3 +1,10 @@
+/*
+   System timer driver using Timer 0 in CTC mode.
+   Provides millisecond resolution timekeeping via get_millis().
+   Used by all drivers for non-blocking state machine timing.
+*/
+
+
 #include <avr/interrupt.h>
 #include "system_timer.h"
 
@@ -5,15 +12,18 @@
 volatile uint32_t system_millis = 0;   // Global millisecond counter updated by TIMER0
 
 
+/*
+   Timer 0 compare match interrupt handler.
+   Increments system_millis every 1ms.
+*/
+ISR (TIMER0_COMPA_vect)
+{
+    system_millis++;   // + 1 millis
+}
+
+
 uint32_t get_millis (void)
 {
-    /* 
-       Returns the current millisecond count with atomic access.
-       Since the AVR is an 8-bit architecture, reading a 32-bit variable (4 bytes)
-       takes multiple CPU cycles. This function disables interrupts during the read
-       to prevent the timer from updating the value mid-access, which would
-       result in data corruption.
-    */
     uint32_t ms_copy;   // Temporary variable
 
     cli ();                    // Disable interrupts to protect the 32-bit read
@@ -21,10 +31,4 @@ uint32_t get_millis (void)
     sei ();                    // Re-enable interrupts immediately after
 
     return ms_copy;   // Returns the protected copy
-}
-
-
-ISR (TIMER0_COMPA_vect)
-{
-    system_millis++;   // + 1 millis
 }
