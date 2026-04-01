@@ -7,6 +7,7 @@
 
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include "fan.h"
 #include "system_timer.h"
 

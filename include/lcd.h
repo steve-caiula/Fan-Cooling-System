@@ -75,6 +75,13 @@ uint8_t lcd_set_cursor(uint8_t row, uint8_t column);
 
 
 /*
+   Sends a full byte to the LCD as two consecutive nibbles (high then low).
+   Returns 0 on success, 1 on communication error.
+*/
+uint8_t lcd_send_byte(uint8_t data, uint8_t rs_mode);
+
+
+/*
    Prints a null-terminated string at the current cursor position.
    Returns 0 on success, 1 on communication error.
 */

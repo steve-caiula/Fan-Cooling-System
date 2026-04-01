@@ -131,11 +131,7 @@ static uint8_t lcd_send_nibble(uint8_t nibble, uint8_t rs_mode)
 }
 
 
-/*
-   Sends a full byte to the LCD as two consecutive nibbles (high then low).
-   Returns 0 on success, 1 on communication error.
-*/
-static uint8_t lcd_send_byte(uint8_t data, uint8_t rs_mode)
+uint8_t lcd_send_byte(uint8_t data, uint8_t rs_mode)
 {
    if (lcd_send_nibble(data >> 4, rs_mode) != 0) return 1;
    if (lcd_send_nibble(data, rs_mode) != 0) return 1;

@@ -22,6 +22,15 @@ ISR (TIMER0_COMPA_vect)
 }
 
 
+void system_timer_init(void)
+{
+    TCCR0A |= (1 << WGM01);                // CTC mode
+    TCCR0B |= (1 << CS01) | (1 << CS00);   // Prescaler 64
+    OCR0A = TIMER0_OCR0A_VALUE;            // Comparison value (16MHz / 64 / 1000Hz - 1)
+    TIMSK0 |= (1 << OCIE0A);               // Enable interrupt for A comparison
+}
+
+
 uint32_t get_millis (void)
 {
     uint32_t ms_copy;   // Temporary variable
