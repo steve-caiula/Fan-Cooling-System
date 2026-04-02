@@ -14,9 +14,9 @@
 // STATUS
 typedef enum 
 {
-    FAN_OK,
-    FAN_ERROR_STALL,
-    FAN_ERROR_UNDERSPEED
+   FAN_OK,
+   FAN_ERROR_STALL,
+   FAN_ERROR_UNDERSPEED
 } fan_status_t;
 
 

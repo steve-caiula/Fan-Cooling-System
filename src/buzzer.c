@@ -42,7 +42,7 @@ void buzzer_stop(void)
 }
 
 
-void buzzer_alarm_sensor(void)
+void buzzer_alarm_critical(void)
 {
     if (buzzer_status == 0) 
     {
@@ -52,7 +52,7 @@ void buzzer_alarm_sensor(void)
 }
 
 
-void buzzer_alarm_lcd(void)
+void buzzer_alarm_warning(void)
 {
     static uint32_t last_toggle = 0;        // Timestamp of last buzzer state change
     uint32_t current_time = get_millis();   // Current system time in milliseconds

@@ -17,11 +17,11 @@ void buzzer_stop(void);
 
 
 /*
-  Activates a continuous tone on sensor fault detection.
+  Activates a continuous tone on sensor fault or fan fault detection.
   The tone is started only once, subsequent calls are no-ops
   until the system is reset.
 */
-void buzzer_alarm_sensor(void);
+void buzzer_alarm_critical(void);
 
 
 /*
@@ -30,6 +30,6 @@ void buzzer_alarm_sensor(void);
   and BUZZER_BLINK_OFF_MS intervals. Non-blocking, must be called
   repeatedly from the main loop.
 */
-void buzzer_alarm_lcd(void);
+void buzzer_alarm_warning(void);
  
 #endif

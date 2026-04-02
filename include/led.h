@@ -8,10 +8,10 @@
 // COLORS
 typedef enum 
 {
-    GREEN,
-    BLUE,
-    YELLOW,
-    RED
+   GREEN,
+   BLUE,
+   YELLOW,
+   RED
 } led_color_t;
 
 
