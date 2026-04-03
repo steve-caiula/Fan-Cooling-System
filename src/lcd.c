@@ -7,17 +7,15 @@
 
 
 #include <avr/io.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 #include <avr/interrupt.h>
 #include "lcd.h"
 #include "system_timer.h"
 
 
-volatile uint8_t twi_busy;           // 1 = transmission in progress, 0 = idle
-volatile uint8_t twi_error;          // 0 = NO ERROR, 1 = ERROR
-volatile uint8_t twi_buffer[16];     // Data buffer to transmit
-volatile uint8_t twi_buffer_len;     // Number of bytes to transmit
-volatile uint8_t twi_buffer_index;   // Current buffer index
+volatile uint8_t twi_busy;    // 1 = transmission in progress, 0 = idle
+volatile uint8_t twi_error;   // 0 = NO ERROR, 1 = ERROR
+volatile uint8_t twi_data;    // Data buffer to transmit
 
 
 /*
@@ -34,24 +32,13 @@ ISR(TWI_vect)
       break;
 
       case TWI_MT_SLA_ACK:   // Address sent, ACK received
-         TWDR = twi_buffer[twi_buffer_index];
-         twi_buffer_index++;
+         TWDR = twi_data;
          TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWIE);
       break;
 
       case TWI_MT_DATA_ACK:   // Data sent, ACK received
-         if (twi_buffer_index < twi_buffer_len) 
-         {
-            TWDR = twi_buffer[twi_buffer_index];
-            twi_buffer_index++;
-            TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWIE);
-         }
-
-         else 
-         {
-            TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
-            twi_busy = 0;
-         }
+         TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
+         twi_busy = 0;
       break;
 
       case TWI_MT_SLA_NACK:    // Address sent, NACK received
@@ -100,11 +87,9 @@ static uint8_t twi_send(uint8_t data)
       }
    }
    
-   twi_buffer[0] = data;  // Load byte into buffer
-   twi_buffer_len = 1;    // Always 1 byte
-   twi_buffer_index = 0;  // Reset buffer index
-   twi_error = 0;         // Reset error flag
-   twi_busy = 1;          // Set bus as busy
+   twi_data = data;   // Load byte
+   twi_error = 0;     // Reset error flag
+   twi_busy = 1;      // Set bus as busy
 
    TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN) | (1 << TWIE);   // Trigger START condition
 
@@ -142,6 +127,8 @@ uint8_t lcd_send_byte(uint8_t data, uint8_t rs_mode)
 
 uint8_t lcd_init(void)
 {
+   twi_init();   // Initialize TWI peripheral before any transmission
+   
    /* Step 1: Power-On Delay.
       Wait for the power supply (VCC) to stabilize. The datasheet requires 
       at least 15ms after VCC rises to 4.5V. A 20ms delay provides a robust 
@@ -255,9 +242,8 @@ uint8_t lcd_print(const char *string)
    {
       /* Step 2: Data Transmission.
          Each character is sent as a DATA byte (RS = 1). 
-         The TC1602A-01T controller (Page 15) uses a built-in 
-         Character Generator ROM (CGROM) to map ASCII-like 
-         values to 5x8 pixel matrices.
+         The LCD controller uses a built-in Character Generator ROM (CGROM) 
+         to map ASCII values to 5x8 pixel matrices.
       */
       if (lcd_send_byte(string[i], LCD_DATA) != 0) return 1;
 
