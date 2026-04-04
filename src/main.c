@@ -9,7 +9,7 @@
    testing with a soldering iron.
    
    Hardware: Arduino UNO R3 (ATmega328P)
-   Peripherals: DS18B20, Arctic P12 PRO, NHD-0420H1Z, PCF8574, Murata buzzer
+   Peripherals: DS18B20, Arctic P12 PRO, NHD-0420H1Z with PCF8574 I2C module, Murata buzzer
 */
 
 
