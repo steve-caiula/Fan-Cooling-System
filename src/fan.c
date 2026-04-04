@@ -10,6 +10,7 @@
 #include <avr/interrupt.h>
 #include "fan.h"
 #include "system_timer.h"
+#include "config.h"
 
 
 volatile uint16_t pulse_count = 0;   // Tachometer pulse counter, incremented by INT0 ISR
@@ -30,6 +31,7 @@ void fan_init(void)
     ICR1 = FAN_ICR1_VALUE;                                // Set TOP for 25kHz frequency
 
     DDRD &= ~(1 << FAN_TACHO);   // Set tachometer pin as input
+    PORTD |= (1 << FAN_TACHO);   // Enable internal pull-up on tachometer pin
 
     EICRA = (1 << ISC01);   // Trigger INT0 on falling edge
     EIMSK = (1 << INT0);    // Enable INT0 interrupt

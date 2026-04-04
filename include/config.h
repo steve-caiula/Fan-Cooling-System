@@ -15,6 +15,9 @@
 
 
 // FAN
+#define FAN_RPM_PER_DUTY       18     // 1800 RPM max / 100
+#define FAN_SPEED_TOLERANCE    50     // Minimum acceptable RPM percentage
+
 #define FAN_TEMP_SILENT        25     // Below 25°C
 #define FAN_TEMP_NORMAL        30     // 25°C - 30°C
 #define FAN_TEMP_PERFORMANCE   35     // 30°C - 35°C

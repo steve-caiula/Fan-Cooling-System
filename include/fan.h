@@ -5,10 +5,8 @@
 #include "board.h"
 
 
-// CONFIGURATION
-#define FAN_ICR1_VALUE       (CPU_FREQ / 25000UL - 1)   // 16MHz / 25kHz - 1 = 639
-#define FAN_RPM_PER_DUTY     18                         // 1800 RPM max / 100
-#define FAN_SPEED_TOLERANCE  70                         // Minimum acceptable RPM percentage
+// ICR1 VALUE
+#define FAN_ICR1_VALUE  (CPU_FREQ / 25000UL - 1)   // 16MHz / 25kHz - 1 = 639
 
 
 // STATUS

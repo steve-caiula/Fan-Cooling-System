@@ -26,6 +26,9 @@ void buzzer_init(void)
 */
 static void buzzer_set_tone(void)
 {
+    TCCR2A = 0;   // Reset Timer 2 control registers before reconfiguring
+    TCCR2B = 0;   // Ensures clean state after previous buzzer_stop() or buzzer_alarm_critical()
+    
     TCCR2A = (1 << WGM21) | (1 << COM2B0);                             // CTC mode, toggle OC2B (D3) on compare match
     TCCR2B = (0 << WGM22) | (1 << CS22) | (0 << CS21) | (0 << CS20);   // Prescaler 64
 

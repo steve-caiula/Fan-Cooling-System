@@ -1,5 +1,5 @@
 /*
-   LCD driver for NHD-0420H1Z via PCF8574 I2C expander.
+   LCD driver for NHD-0420H1Z via PCF8574 I2C module.
    Communicates over hardware TWI at 100kHz.
    Implements interrupt-driven I2C transmission with timeout-based error detection.
    Supports 4-bit mode, cursor positioning and string printing.
@@ -86,6 +86,8 @@ static uint8_t twi_send(uint8_t data)
          return 1;   // Timeout exceeded, bus unresponsive
       }
    }
+
+   _delay_us(50);   // Bus release time between STOP and START
    
    twi_data = data;   // Load byte
    twi_error = 0;     // Reset error flag

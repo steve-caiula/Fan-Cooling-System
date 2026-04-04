@@ -43,9 +43,9 @@ int main(void)
     buzzer_init();         // Configures buzzer pin as output
     led_init();            // Configures LED pins as output
 
-    lcd_init_error = lcd_init();   // Initializes TWI and LCD, stores result for main loop
-
     sei();   // Enable global interrupts
+
+    lcd_init_error = lcd_init();   // Initializes TWI and LCD, stores result for main loop
 
     while (get_millis() < 1000);   // Wait for fan RPM first sample to be ready to avoid FAN_ERROR_STALL in first loop
 
@@ -102,7 +102,9 @@ int main(void)
             lcd_error |= lcd_send_byte(LCD_DEGREE_SYMBOL, LCD_DATA);
             lcd_error |= lcd_print("C       ") ;
 
-            if (temp_celsius <= FAN_TEMP_SILENT) 
+            led_error |= led_off(YELLOW);
+
+            if (temp_celsius <= FAN_TEMP_SILENT && fan_status == FAN_OK) 
             {
                 fan_set_speed(FAN_SPEED_SILENT);
             
@@ -118,7 +120,7 @@ int main(void)
                 led_error |= led_off(RED);
             }
 
-            else if (temp_celsius > FAN_TEMP_SILENT && temp_celsius <= FAN_TEMP_NORMAL) 
+            else if (temp_celsius > FAN_TEMP_SILENT && temp_celsius <= FAN_TEMP_NORMAL && fan_status == FAN_OK) 
             {
                 fan_set_speed(FAN_SPEED_NORMAL);
             
@@ -134,7 +136,7 @@ int main(void)
                 led_error |= led_off(RED);
             }
 
-            else if (temp_celsius > FAN_TEMP_NORMAL && temp_celsius <= FAN_TEMP_PERFORMANCE) 
+            else if (temp_celsius > FAN_TEMP_NORMAL && temp_celsius <= FAN_TEMP_PERFORMANCE && fan_status == FAN_OK) 
             {
                 fan_set_speed(FAN_SPEED_PERFORMANCE);
             
@@ -150,7 +152,7 @@ int main(void)
                 led_error |= led_off(RED);
             }
 
-            else if (temp_celsius >= FAN_TEMP_CRITICAL)
+            else if (temp_celsius >= FAN_TEMP_CRITICAL && fan_status == FAN_OK)
             {
                 fan_set_speed(FAN_SPEED_MAX);
             
