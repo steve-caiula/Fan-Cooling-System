@@ -10,6 +10,7 @@ PORT  = /dev/ttyACM0
 CC      = avr-gcc
 OBJCOPY = avr-objcopy
 AVRDUDE = avrdude
+SIZE    = avr-size
 
 
 # --- COMPILATION FLAGS ---
@@ -24,12 +25,12 @@ SRCS = src/main.c src/system_timer.c src/lcd.c src/temp_sensor.c src/fan.c src/l
 
 # --- MAIN TARGETS ---
 all: main.hex
-
+	$(SIZE) --mcu=$(MCU) --format=avr main.elf
+#
 # 1. Link all source files from src/ into an ELF file
 main.elf: $(SRCS)
 	$(CC) $(CFLAGS) -o main.elf $(SRCS)
 #
-
 # 2. Extract the Intel HEX format for flashing
 main.hex: main.elf
 	$(OBJCOPY) -O ihex main.elf main.hex
