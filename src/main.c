@@ -76,8 +76,6 @@ int main(void)
             lcd_error |= lcd_print("TEMP. SENSOR ERROR  ");
             lcd_error |= lcd_set_cursor(1, 0);
             lcd_error |= lcd_print("FAN SPEED MAX       ");
-            lcd_error |= lcd_set_cursor(2, 0);
-            lcd_error |= lcd_print("FAN OK              ");
 
             led_error |= led_off(RED);
             led_error |= led_on(YELLOW);
@@ -96,7 +94,7 @@ int main(void)
         else 
         {
             lcd_error |= lcd_set_cursor(0, 0);
-            lcd_error |= lcd_print("Temp: ");
+            lcd_error |= lcd_print("TEMP: ");
             dtostrf(temp_celsius, 4, 2, temp_string);
             lcd_error |= lcd_print(temp_string);
             lcd_error |= lcd_send_byte(LCD_DEGREE_SYMBOL, LCD_DATA);
@@ -104,7 +102,7 @@ int main(void)
 
             led_error |= led_off(YELLOW);
 
-            if (temp_celsius <= FAN_TEMP_SILENT && fan_status == FAN_OK) 
+            if (temp_celsius <= FAN_TEMP_SILENT) 
             {
                 fan_set_speed(FAN_SPEED_SILENT);
             
@@ -114,13 +112,17 @@ int main(void)
             
                 lcd_error |= lcd_set_cursor(1, 0);
                 lcd_error |= lcd_print("FAN SPEED SILENT    ");
-                lcd_error |= lcd_set_cursor(2, 0);
-                lcd_error |= lcd_print("FAN OK              ");
+
+                if (fan_status == FAN_OK)
+                {
+                    lcd_error |= lcd_set_cursor(2, 0);
+                    lcd_error |= lcd_print("FAN OK              ");
+                }
 
                 led_error |= led_off(RED);
             }
 
-            else if (temp_celsius > FAN_TEMP_SILENT && temp_celsius <= FAN_TEMP_NORMAL && fan_status == FAN_OK) 
+            else if (temp_celsius > FAN_TEMP_SILENT && temp_celsius <= FAN_TEMP_NORMAL) 
             {
                 fan_set_speed(FAN_SPEED_NORMAL);
             
@@ -130,13 +132,17 @@ int main(void)
 
                 lcd_error |= lcd_set_cursor(1, 0);
                 lcd_error |= lcd_print("FAN SPEED NORMAL    ");
-                lcd_error |= lcd_set_cursor(2, 0);
-                lcd_error |= lcd_print("FAN OK              ");
+
+                if (fan_status == FAN_OK)
+                {
+                    lcd_error |= lcd_set_cursor(2, 0);
+                    lcd_error |= lcd_print("FAN OK              ");
+                }
 
                 led_error |= led_off(RED);
             }
 
-            else if (temp_celsius > FAN_TEMP_NORMAL && temp_celsius <= FAN_TEMP_PERFORMANCE && fan_status == FAN_OK) 
+            else if (temp_celsius > FAN_TEMP_NORMAL && temp_celsius <= FAN_TEMP_PERFORMANCE) 
             {
                 fan_set_speed(FAN_SPEED_PERFORMANCE);
             
@@ -146,13 +152,17 @@ int main(void)
 
                 lcd_error |= lcd_set_cursor(1, 0);
                 lcd_error |= lcd_print("FAN SPEED PERFORM.  ");
-                lcd_error |= lcd_set_cursor(2, 0);
-                lcd_error |= lcd_print("FAN OK              ");
+        
+                if (fan_status == FAN_OK)
+                {
+                    lcd_error |= lcd_set_cursor(2, 0);
+                    lcd_error |= lcd_print("FAN OK              ");
+                }
 
                 led_error |= led_off(RED);
             }
 
-            else if (temp_celsius >= FAN_TEMP_CRITICAL && fan_status == FAN_OK)
+            else if (temp_celsius >= FAN_TEMP_CRITICAL)
             {
                 fan_set_speed(FAN_SPEED_MAX);
             
@@ -162,8 +172,12 @@ int main(void)
 
                 lcd_error |= lcd_set_cursor(1, 0);
                 lcd_error |= lcd_print("FAN SPEED MAX       ");
-                lcd_error |= lcd_set_cursor(2, 0);
-                lcd_error |= lcd_print("FAN OK              ");
+
+                if (fan_status == FAN_OK)
+                {
+                    lcd_error |= lcd_set_cursor(2, 0);
+                    lcd_error |= lcd_print("FAN OK              ");
+                }
 
                 led_error |= led_off(RED);
             }
@@ -266,6 +280,8 @@ int main(void)
             led_error |= led_off(BLUE);
             led_error |= led_off(YELLOW);
             led_error |= led_off(RED);
+
+            buzzer_stop();
         }
     }
 }
