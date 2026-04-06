@@ -74,9 +74,9 @@ driver with a clean public interface, keeping hardware-specific code separate fr
 | include/config.h            | System configuration parameters: temperature thresholds and fan speeds          |
 | Makefile                    | Build system: compile, flash and memory usage targets                           |
 
-### Protocols and Peripherals
+### Communication Protocols and Drivers
 
-The following section describes the communication protocols and peripherals implemented 
+The following section describes the communication protocols and drivers implemented 
 in this project and the key implementation decisions.
 
 #### 1-Wire (DS18B20)
@@ -124,6 +124,15 @@ P3=BL (backlight), P4-P7=DB4-DB7.
 specific delays (>4.1ms, >100µs) before switching to 4-bit mode. This sequence is
 mandatory, without it the controller does not correctly interpret subsequent commands.
 
+* **Character Overflow Handling:** `lcd_print()` does not check the string length
+before printing. A potential overflow would write to DDRAM beyond the last visible
+character, but the NHD-0420H1Z has 40 DDRAM cells per row with non-contiguous
+addresses between rows, so an overflow on one row does not corrupt the adjacent row.
+All strings passed to `lcd_print()` are padded with trailing spaces to overwrite any
+residual characters from previous prints, avoiding visual artifacts without calling
+`LCD_CLEAR_DISPLAY` on every cycle, which would cause visible flickering due to the
+1.52ms execution time of the clear command.
+
 #### PWM and Tachometer (Arctic P12 PRO)
 
 * **25kHz PWM Frequency:** Timer 1 is configured in Fast PWM mode 14 with ICR1 as TOP,
@@ -164,6 +173,26 @@ intermittent tone using `get_millis()` to alternate between on and off states ba
 to 0 before reconfiguring Timer 2. Without this reset, residual timer state from a
 previous `buzzer_alarm_critical()` call prevents the intermittent alarm from restarting
 correctly after the critical alarm is cleared.
+
+#### LED Status Indicators
+
+* **Color-to-Fault Mapping:** Four LEDs on PB2-PB5 provide a visual summary of system
+status: GREEN = all peripherals OK, YELLOW = sensor fault, RED = fan fault, BLUE = LCD
+fault. At most one LED is active at any time, reflecting the highest-priority fault
+currently detected.
+
+* **Fault Priority:** RED and YELLOW take precedence over BLUE. When a critical fault
+clears, the GREEN LED turns on and all others are turned off.
+
+#### System Timer
+
+`system_millis` is a `uint32_t`, which can hold values up to 2³²-1 = 4,294,967,295. Since it is incremented every millisecond by the Timer0 ISR, it overflows after approximately 49.7 days:
+
+​```
+2^32 ms / (1000 * 60 * 60 * 24) ≈ 49.7 days
+​```
+
+When overflow occurs, `system_millis` wraps back to 0. All elapsed-time checks in the codebase use the subtraction pattern `current_time - last_time >= interval`, which is safe across overflow boundaries due to unsigned integer wraparound: if `current_time` wraps to a value smaller than `last_time`, the subtraction underflows to the correct positive difference in modular arithmetic. No special handling is therefore required.
 
 ### Error Handling
 
@@ -247,15 +276,6 @@ the fan error blocks. This double write on the same row every cycle causes visib
 flickering. As a solution, the "FAN OK" print was moved inside a `if (fan_status == FAN_OK)`
 check within each temperature range block, so row 2 is written only once per cycle
 regardless of fan status.
-
-#### LCD Character Overflow
-`lcd_print()` does not check the string length before printing. A potential overflow
-would write to DDRAM beyond the last visible character, but the NHD-0420H1Z has 40
-DDRAM cells per row with non-contiguous addresses between rows, so an overflow on one
-row does not corrupt the adjacent row. All strings passed to `lcd_print()` are padded
-with trailing spaces to overwrite any residual characters from previous prints, avoiding
-visual artifacts without calling `LCD_CLEAR_DISPLAY` on every cycle, which would cause
-visible flickering due to the 1.52ms execution time of the clear command.
 
 ### Known Limitations and Future Improvements
 
