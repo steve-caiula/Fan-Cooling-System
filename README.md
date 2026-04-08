@@ -74,12 +74,12 @@ driver with a clean public interface, keeping hardware-specific code separate fr
 | include/config.h            | System configuration parameters: temperature thresholds and fan speeds          |
 | Makefile                    | Build system: compile, flash and memory usage targets                           |
 
-### Communication Protocols and Drivers
+### Drivers and Communication Protocols  
 
-The following section describes the communication protocols and drivers implemented 
+The following section describes the drivers and communication protocols implemented 
 in this project and the key implementation decisions.
 
-#### 1-Wire (DS18B20)
+#### Temperature Sensor - DS18B20 (1-Wire)
 
 * **Reset and Presence Pulse:** Every communication starts with a 480µs reset pulse,
 during which the master pulls the bus LOW. After release, the master samples at 70µs. 
@@ -99,7 +99,7 @@ Instead of blocking the system with `_delay_ms(750)`, `get_raw_temperature()` im
 a two-state FSM using `get_millis()` to check elapsed time without occupying the CPU,
 keeping the main loop responsive during conversion.
 
-#### I2C (NHD-0420H1Z via PCF8574)
+#### LCD - NHD-0420H1Z via PCF8574 (I2C)
 
 * **Interrupt-Driven State Machine:** The TWI peripheral is driven by an ISR that manages
 the I2C master transmitter state machine. Each transmission is triggered by writing to
@@ -133,7 +133,7 @@ residual characters from previous prints, avoiding visual artifacts without call
 `LCD_CLEAR_DISPLAY` on every cycle, which would cause visible flickering due to the
 1.52ms execution time of the clear command.
 
-#### PWM and Tachometer (Arctic P12 PRO)
+#### Fan - Arctic P12 PRO (PWM and Tachometer)
 
 * **25kHz PWM Frequency:** Timer 1 is configured in Fast PWM mode 14 with ICR1 as TOP,
 giving a frequency of 16MHz / 640 = 25kHz. This frequency follows the Intel 4-wire fan
@@ -156,7 +156,7 @@ with active PWM) and underspeed (RPM below the expected threshold calculated fro
 cycle, nominal RPM per duty unit and a configurable tolerance percentage). Both
 thresholds are configurable in `config.h`.
 
-#### Buzzer (Murata Passive Piezo)
+#### Buzzer - Murata Passive Piezo
 
 * **CTC Tone Generation:** Timer 2 is configured in CTC mode to toggle OC2B (D3) on
 compare match, generating a square wave at the target frequency. The compare value is
