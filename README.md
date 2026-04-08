@@ -186,13 +186,15 @@ clears, the GREEN LED turns on and all others are turned off.
 
 #### System Timer
 
-`system_millis` is a `uint32_t`, which can hold values up to 2³²-1 = 4,294,967,295. Since it is incremented every millisecond by the Timer0 ISR, it overflows after approximately 49.7 days:
+`system_millis` is a `uint32_t`, which can hold values up to 2³²-1 = 4,294,967,295. Since it is incremented every millisecond by the
+Timer0 ISR, it overflows after approximately 49.7 days:
 
-​```
-2^32 ms / (1000 * 60 * 60 * 24) ≈ 49.7 days
-​```
+$$\frac{2^{32} \text{ ms}}{\left( 1000 \frac{\text{ms}}{\text{s}} \cdot 60 \frac{\text{s}}{\text{min}} \cdot 60 \frac{\text{min}}{\text{h}} \cdot 24 \frac{\text{h}}{\text{d}} \right)} = \frac{4\,294\,967\,296 \text{ ms}}{86\,400\,000 \text{ ms/d}} \approx 49,7 \text{ d}$$
 
-When overflow occurs, `system_millis` wraps back to 0. All elapsed-time checks in the codebase use the subtraction pattern `current_time - last_time >= interval`, which is safe across overflow boundaries due to unsigned integer wraparound: if `current_time` wraps to a value smaller than `last_time`, the subtraction underflows to the correct positive difference in modular arithmetic. No special handling is therefore required.
+When overflow occurs, `system_millis` wraps back to 0. All elapsed-time checks in the codebase use the subtraction pattern
+`current_time - last_time >= interval`, which is safe across overflow boundaries due to unsigned integer wraparound: if
+`current_time` wraps to a value smaller than `last_time`, the subtraction underflows to the correct positive difference in modular
+arithmetic. No special handling is therefore required.
 
 ### Error Handling
 
