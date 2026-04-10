@@ -351,7 +351,7 @@ which require a system reset.
 * [PCF8574 Datasheet](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf)
 * [4-Wire PWM Fan Specification](https://glkinst.com/cables/cable_pics/4_Wire_PWM_Spec.pdf)
 * [Arctic P12 PRO Documentation](https://support.arctic.de/p12-pro/docs)
-* [Murata PKM22EPPH4001-B0 Datasheet](https://www.arduino.cc/documents/datasheets/PIEZO-PKM22EPPH4001-BO.pdf)
+* [Murata PKM22EPPH4001-BO Datasheet](https://www.arduino.cc/documents/datasheets/PIEZO-PKM22EPPH4001-BO.pdf)
 * [Arduino UNO R3 Pinout](https://docs.arduino.cc/resources/pinouts/A000066-full-pinout.pdf)
 
 ## Author

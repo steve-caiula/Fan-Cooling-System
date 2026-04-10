@@ -77,6 +77,12 @@ int main(void)
             lcd_error |= lcd_set_cursor(1, 0);
             lcd_error |= lcd_print("FAN SPEED MAX       ");
 
+            if (fan_status == FAN_OK)
+            {
+                lcd_error |= lcd_set_cursor(2, 0);
+                lcd_error |= lcd_print("FAN OK              ");
+            }
+
             led_error |= led_off(RED);
             led_error |= led_on(YELLOW);
             led_error |= led_off(GREEN);
@@ -122,7 +128,7 @@ int main(void)
                 led_error |= led_off(RED);
             }
 
-            else if (temp_celsius > FAN_TEMP_SILENT && temp_celsius <= FAN_TEMP_NORMAL) 
+            else if (temp_celsius <= FAN_TEMP_NORMAL) 
             {
                 fan_set_speed(FAN_SPEED_NORMAL);
             
@@ -142,7 +148,7 @@ int main(void)
                 led_error |= led_off(RED);
             }
 
-            else if (temp_celsius > FAN_TEMP_NORMAL && temp_celsius <= FAN_TEMP_PERFORMANCE) 
+            else if (temp_celsius <= FAN_TEMP_PERFORMANCE) 
             {
                 fan_set_speed(FAN_SPEED_PERFORMANCE);
             
@@ -162,7 +168,7 @@ int main(void)
                 led_error |= led_off(RED);
             }
 
-            else if (temp_celsius >= FAN_TEMP_CRITICAL)
+            else
             {
                 fan_set_speed(FAN_SPEED_MAX);
             
