@@ -69,7 +69,12 @@ uint16_t fan_get_rpm(void)
 
 fan_status_t fan_get_status(uint16_t rpm, uint8_t duty_cycle)
 {
-    if (rpm == 0 && duty_cycle > 0)   // Fan not spinning despite active PWM
+    if (rpm > 3000) // Handle parasitic noise/floating ground caused by disconnected power lines
+    {
+        return FAN_ERROR_STALL;
+    }    
+    
+    else if (rpm == 0 && duty_cycle > 0)   // Fan not spinning despite active PWM
     {
         return FAN_ERROR_STALL;
     }
