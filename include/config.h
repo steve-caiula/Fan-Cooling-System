@@ -18,10 +18,16 @@
 #define FAN_RPM_PER_DUTY       18     // 1800 RPM max / 100
 #define FAN_SPEED_TOLERANCE    50     // Minimum acceptable RPM percentage
 
+
+// TEMPERATURE THRESHOLDS
+// Compressed range (22-24°C) calibrated for laboratory testing with a soldering iron.
+// Widen the range for real-world use cases.
 #define FAN_TEMP_SILENT        22     // Below 22°C
 #define FAN_TEMP_NORMAL        23     // 22.01°C - 23°C
 #define FAN_TEMP_PERFORMANCE   24     // 23.01°C - 24°C (above 24°C -> safe mode)
 
+
+// FAN SPEED
 #define FAN_SPEED_SILENT       30     // Mode SILENT (minimum guaranteed speed)
 #define FAN_SPEED_NORMAL       50     // Mode NORMAL
 #define FAN_SPEED_PERFORMANCE  75     // Mode PERFORMANCE

@@ -153,8 +153,9 @@ providing a sufficient pull-up for the tachometer signal without external compon
 
 * **Fault Detection:** `fan_get_status()` detects two fault conditions: stall (RPM = 0
 with active PWM) and underspeed (RPM below the expected threshold calculated from duty
-cycle, nominal RPM per duty unit and a configurable tolerance percentage). Both
-thresholds are configurable in `config.h`.
+cycle, nominal RPM per duty unit and a configurable tolerance percentage). An upper
+bound check on `FAN_RPM_MAX` discards parasitic readings caused by floating lines,
+treating them as stall. Thresholds are configurable in `config.h`.
 
 #### Buzzer - Murata Passive Piezo
 
@@ -279,6 +280,14 @@ flickering. As a solution, the "FAN OK" print was moved inside a `if (fan_status
 check within each temperature range block, so row 2 is written only once per cycle
 regardless of fan status.
 
+#### False FAN_OK on Disconnected Power Lines
+During hardware testing, disconnecting the fan power lines (VCC and GND) while leaving
+the tacho and PWM cables connected caused fan_get_status() to return FAN_OK instead of
+FAN_ERROR_STALL. The floating cables picked up electromagnetic noise, generating spurious
+INT0 pulses that produced an artificially high RPM reading, masking the actual stall
+condition. As a solution, an upper bound check was added in fan_get_status(): if RPM
+exceeds FAN_RPM_MAX, the reading is treated as invalid and FAN_ERROR_STALL is returned.
+
 ### Known Limitations and Future Improvements
 
 * **No hysteresis on temperature thresholds:** Rapid temperature fluctuations near a
@@ -335,6 +344,10 @@ make clean
 #### Configuration
 System parameters such as temperature thresholds and fan speeds can be adjusted in
 `include/config.h` without modifying the driver code.
+
+Temperature thresholds are set to a compressed range (22–24°C) suitable for laboratory
+testing with a soldering iron as heat source. For real-world use, widen the range in
+`include/config.h` according to the target environment.
 
 #### Usage
 At startup the system waits 1 second for the first fan RPM sample, then enters the

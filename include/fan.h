@@ -9,6 +9,10 @@
 #define FAN_ICR1_VALUE  (CPU_FREQ / 25000UL - 1)   // 16MHz / 25kHz - 1 = 639
 
 
+// RPM LIMIT
+#define FAN_RPM_MAX  3000   // Maximum physically possible RPM for this fan
+
+
 // STATUS
 typedef enum 
 {
