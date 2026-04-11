@@ -10,7 +10,7 @@
 
 
 // RPM LIMIT
-#define FAN_RPM_MAX  3000   // Maximum physically possible RPM for this fan
+#define FAN_RPM_MAX  4000   // Upper bound for valid RPM readings, above this value readings are treated as noise
 
 
 // STATUS
