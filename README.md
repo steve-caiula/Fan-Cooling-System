@@ -14,6 +14,10 @@ Errors are signaled through a 20x4 I2C LCD display, a passive buzzer and four st
 a dedicated alarm priority. All drivers are implemented from scratch via direct register manipulation,
 using only the avr-gcc toolchain.
 
+![System](media/fan_cooling_system.jpg)
+
+For the video demo, see the `media/` folder.
+
 ## Hardware
 
 The system is built around an Arduino UNO R3 (ATmega328P) connected to a DS18B20 temperature sensor,
@@ -31,7 +35,7 @@ driven directly at 12V. The circuit is currently assembled on a breadboard.
 | NHD-0420H1Z               | 1            | 20x4 LCD with PCF8574 I2C module               |
 | Murata Buzzer             | 1            | Passive piezo buzzer                           |
 | LED                       | 4            | Red, Yellow, Blue, Green                       |
-| DC-DC Step-Down Module    | 1            | 12V → 5V                                       |
+| DC-DC Step-Down Module    | 1            | 12V → 5V (adjustable)                          |
 | 12V Power Supply          | 1            |                                                |
 | Capacitor 47µF 25V        | 1            | Electrolytic, power supply decoupling          |
 | Capacitor 330µF 25V       | 1            | Electrolytic, fan power decoupling             |
@@ -39,7 +43,7 @@ driven directly at 12V. The circuit is currently assembled on a breadboard.
 | Resistor 4.7kΩ            | 1            | 1-Wire bus pull-up                             |
 | Resistor 100Ω             | 1            | Buzzer current limiting                        |
 | Resistor 220Ω             | 4            | LED current limiting                           |
-| Breadboard                | 2            | 830 tie points                                 |
+| Breadboard                | 2            | 830 tie points, 380 tie points                 |
 | Jumper Wires              | 22           |                                                |
 
 ### Schematic
@@ -52,6 +56,42 @@ The KiCad project file and a PDF export are available in the `hardware/` folder.
 
 The firmware is organized into independent, single-responsibility modules. Each peripheral has a dedicated
 driver with a clean public interface, keeping hardware-specific code separate from application logic.
+
+```mermaid
+graph TD
+main["main.c"]
+
+fan["fan.c"]
+temp["temp_sensor.c"]
+lcd["lcd.c"]
+buzzer["buzzer.c"]
+led["led.c"]
+
+timer["system_timer.c"]
+
+headers["board.h · config.h\nglobal configuration"]
+
+main --> fan
+main --> temp
+main --> lcd
+main --> buzzer
+main --> led
+
+main -.-> timer
+fan -.-> timer
+temp -.-> timer
+lcd -.-> timer
+buzzer -.-> timer
+
+subgraph shared["Shared headers — included by all modules"]
+headers
+end
+
+subgraph legend["Legend"]
+A["caller"] -->|"calls / uses"| B["driver"]
+C["module"] -.->|"get_millis()"| D["system_timer.c"]
+end
+```
 
 ### Structure
 
@@ -302,6 +342,15 @@ revision.
 * **No thermal protection on fan fault:** When a fan fault is detected, the system 
 signals the error but has no hardware fallback to prevent overheating. In a production 
 environment, a thermal shutdown or an emergency power-off mechanism should be considered.
+
+* **Tachometer signal noise on breadboard:** The tachometer signal is occasionally susceptible 
+to electromagnetic interference when the fan operates below approximately 80% duty cycle, where 
+the lower motor current reduces the signal amplitude and makes it more vulnerable to noise induced 
+by the breadboard's parasitic capacitance and unshielded connections. In affected conditions, 
+spurious INT0 pulses may produce RPM readings that deviate from the actual fan speed. 
+Migrating the circuit from breadboard to a perfboard or PCB, with shorter signal traces and 
+more stable signal paths (and additional decoupling capacitors if necessary), is expected to 
+resolve the issue.
 
 ### Installation and Usage
 
