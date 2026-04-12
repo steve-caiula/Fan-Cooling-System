@@ -325,8 +325,11 @@ make
 
 After a successful build, memory usage is printed automatically:
 ```
-Program:    5302 bytes (16.2% Full)
+Program:    5270 bytes (16.1% Full)
+(.text + .data + .bootloader)
+
 Data:        297 bytes (14.5% Full)
+(.data + .bss + .noinit)
 ```
 
 #### Flash
