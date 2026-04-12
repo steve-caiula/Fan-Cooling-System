@@ -57,42 +57,6 @@ The KiCad project file and a PDF export are available in the `hardware/` folder.
 The firmware is organized into independent, single-responsibility modules. Each peripheral has a dedicated
 driver with a clean public interface, keeping hardware-specific code separate from application logic.
 
-```mermaid
-graph TD
-main["main.c"]
-
-fan["fan.c"]
-temp["temp_sensor.c"]
-lcd["lcd.c"]
-buzzer["buzzer.c"]
-led["led.c"]
-
-timer["system_timer.c"]
-
-headers["board.h · config.h\nglobal configuration"]
-
-main --> fan
-main --> temp
-main --> lcd
-main --> buzzer
-main --> led
-
-main -.-> timer
-fan -.-> timer
-temp -.-> timer
-lcd -.-> timer
-buzzer -.-> timer
-
-subgraph shared["Shared headers — included by all modules"]
-headers
-end
-
-subgraph legend["Legend"]
-A["caller"] -->|"calls / uses"| B["driver"]
-C["module"] -.->|"get_millis()"| D["system_timer.c"]
-end
-```
-
 ### Structure
 
 | **File**                    | **Description**                                                                 |
